@@ -188,12 +188,16 @@ import QuartzCore
     */
     public var offLabel: UILabel!
     
+    public var knobWidth: CGFloat!
+    public var knobHeight: CGFloat!
+    
     // internal
     internal var backgroundView: UIView!
     internal var thumbView: UIView!
     internal var onImageView: UIImageView!
     internal var offImageView: UIImageView!
     internal var thumbImageView: UIImageView!
+
     // private
     private var currentVisualValue: Bool = false
     private var startTrackingValue: Bool = false
@@ -201,6 +205,7 @@ import QuartzCore
     private var isAnimating: Bool = false
     private var userDidSpecifyOnThumbTintColor: Bool = false
     private var switchValue: Bool = false
+
     
     /*
     *   Initialization
@@ -239,31 +244,36 @@ import QuartzCore
         self.addSubview(backgroundView)
         
         // on/off images
-        self.onImageView = UIImageView(frame: CGRectMake(0, 0, self.frame.size.width - self.frame.size.height, self.frame.size.height))
+        self.onImageView = UIImageView(frame: CGRectMake(0, 0, self.frame.size.width / 2, self.frame.size.height))
         onImageView.alpha = 1.0
         onImageView.contentMode = UIViewContentMode.Center
         backgroundView.addSubview(onImageView)
-        
-        self.offImageView = UIImageView(frame: CGRectMake(self.frame.size.height, 0, self.frame.size.width - self.frame.size.height, self.frame.size.height))
+      
+        self.offImageView = UIImageView(frame: CGRectMake(self.frame.size.width / 2, 0, self.frame.size.width / 2, self.frame.size.height))
         offImageView.alpha = 1.0
         offImageView.contentMode = UIViewContentMode.Center
         backgroundView.addSubview(offImageView)
         
         // labels
-        self.onLabel = UILabel(frame: CGRectMake(0, 0, self.frame.size.width - self.frame.size.height, self.frame.size.height))
+        self.onLabel = UILabel(frame: CGRectMake(0, 0, self.frame.size.width / 2, self.frame.size.height))
         onLabel.textAlignment = NSTextAlignment.Center
         onLabel.textColor = UIColor.lightGrayColor()
         onLabel.font = UIFont.systemFontOfSize(12)
         backgroundView.addSubview(onLabel)
+      
+        self.offLabel = UILabel(frame: CGRectMake(self.frame.size.width / 2, 0, self.frame.size.width / 2, self.frame.size.height))
         
-        self.offLabel = UILabel(frame: CGRectMake(self.frame.size.height, 0, self.frame.size.width - self.frame.size.height, self.frame.size.height))
         offLabel.textAlignment = NSTextAlignment.Center
         offLabel.textColor = UIColor.lightGrayColor()
         offLabel.font = UIFont.systemFontOfSize(12)
         backgroundView.addSubview(offLabel)
         
         // thumb
-        self.thumbView = UIView(frame: CGRectMake(1, 1, self.frame.size.height - 2, self.frame.size.height - 2))
+        knobWidth  = self.frame.size.width / 2 - 2
+        knobHeight = self.frame.size.height - 2
+
+        self.thumbView = UIView(frame: CGRectMake(1, 1, knobWidth, knobHeight))
+        
         thumbView.backgroundColor = self.thumbTintColor
         thumbView.layer.cornerRadius = (self.frame.size.height * 0.5) - 1
         thumbView.layer.shadowColor = self.shadowColor.CGColor
@@ -290,9 +300,9 @@ import QuartzCore
         startTrackingValue = self.on
         didChangeWhileTracking = false
         
-        let activeKnobWidth = self.bounds.size.height - 2 + 5
+        let activeKnobWidth = knobWidth - 2 + 5
         isAnimating = true
-        
+      
         UIView.animateWithDuration(0.3, delay: 0.0, options: [UIViewAnimationOptions.CurveEaseOut, UIViewAnimationOptions.BeginFromCurrentState], animations: {
                 if self.on {
                     self.thumbView.frame = CGRectMake(self.bounds.size.width - (activeKnobWidth + 1), self.thumbView.frame.origin.y, activeKnobWidth, self.thumbView.frame.size.height)
@@ -375,18 +385,17 @@ import QuartzCore
             backgroundView.layer.cornerRadius = self.isRounded ? frame.size.height * 0.5 : 2
             
             // images
-            onImageView.frame = CGRectMake(0, 0, frame.size.width - frame.size.height, frame.size.height)
-            offImageView.frame = CGRectMake(frame.size.height, 0, frame.size.width - frame.size.height, frame.size.height)
-            self.onLabel.frame = CGRectMake(0, 0, frame.size.width - frame.size.height, frame.size.height)
-            self.offLabel.frame = CGRectMake(frame.size.height, 0, frame.size.width - frame.size.height, frame.size.height)
+            onImageView.frame = CGRectMake(0, 0, frame.size.width / 2, frame.size.height)
+            offImageView.frame = CGRectMake(frame.size.width / 2, 0, frame.size.width / 2, frame.size.height)
+            self.onLabel.frame = CGRectMake(0, 0, frame.size.width / 2, frame.size.height)
+            self.offLabel.frame = CGRectMake(frame.size.width / 2, 0, frame.size.width / 2, frame.size.height)
             
             // thumb
-            let normalKnobWidth = frame.size.height - 2
             if self.on {
-                thumbView.frame = CGRectMake(frame.size.width - (normalKnobWidth + 1), 1, frame.size.height - 2, normalKnobWidth)
+                thumbView.frame = CGRectMake(frame.size.width - (knobWidth + 1), 1, knobWidth, knobHeight)
             }
             else {
-                thumbView.frame = CGRectMake(1, 1, normalKnobWidth, normalKnobWidth)
+                thumbView.frame = CGRectMake(1, 1, knobWidth, knobHeight)
             }
             
             thumbView.layer.cornerRadius = self.isRounded ? (frame.size.height * 0.5) - 1 : 2
@@ -421,13 +430,14 @@ import QuartzCore
     *   optionally make it animated
     */
     private func showOn(animated: Bool) {
-        let normalKnobWidth = self.bounds.size.height - 2
-        let activeKnobWidth = normalKnobWidth + 5
+        let normalKnobWidth = knobWidth
+        let activeKnobWidth = normalKnobWidth - 5
         if animated {
             isAnimating = true
             UIView.animateWithDuration(0.3, delay: 0.0, options: [UIViewAnimationOptions.CurveEaseOut, UIViewAnimationOptions.BeginFromCurrentState], animations: {
                 if self.tracking {
                     self.thumbView.frame = CGRectMake(self.bounds.size.width - (activeKnobWidth + 1), self.thumbView.frame.origin.y, activeKnobWidth, self.thumbView.frame.size.height)
+                    
                 }
                 else {
                     self.thumbView.frame = CGRectMake(self.bounds.size.width - (normalKnobWidth + 1), self.thumbView.frame.origin.y, normalKnobWidth, self.thumbView.frame.size.height)
@@ -469,7 +479,7 @@ import QuartzCore
     *   optionally make it animated
     */
     private func showOff(animated: Bool) {
-        let normalKnobWidth = self.bounds.size.height - 2
+        let normalKnobWidth = knobWidth
         let activeKnobWidth = normalKnobWidth + 5
         
         if animated {
